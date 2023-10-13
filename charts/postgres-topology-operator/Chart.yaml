@@ -1,0 +1,13 @@
+apiVersion: v2
+appVersion: 0.0.1
+description: An operator for Postgres topology
+home: https://github.com/digizuite/postgres-topology-operator
+keywords:
+  - operator
+  - postgres
+kubeVersion: ">= 1.25.0-0"
+name: postgres-topology-operator
+sources:
+  - https://github.com/digizuite/postgres-topology-operator
+version: 0.0.1
+icon: https://www.postgresql.org/media/img/about/press/elephant.png
