@@ -138,7 +138,7 @@ spec:
       serviceAccountName: postgres-topology-operator
       containers:
         - name: operator
-          image: ghcr.io/digizuite/postgres-topology-operator:local
+          image: {{ .Values.operator.image }}
           imagePullPolicy: {{ .Values.operator.imagePullPolicy }}
           env:
             - name: RUST_LOG

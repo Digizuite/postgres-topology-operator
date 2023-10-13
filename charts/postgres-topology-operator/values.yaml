@@ -1,6 +1,7 @@
 operator:
   enable: true
   imagePullPolicy: Always
+  image: ghcr.io/digizuite/postgres-topology-operator:master
   resources:
     limits:
       cpu: 100m
