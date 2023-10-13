@@ -1,0 +1,601 @@
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  name: postgresschemas.postgres.digizuite.com
+spec:
+  group: postgres.digizuite.com
+  names:
+    categories: []
+    kind: PostgresSchema
+    plural: postgresschemas
+    shortNames: []
+    singular: postgresschema
+  scope: Namespaced
+  versions:
+  - additionalPrinterColumns:
+    - description: Name of the schema
+      jsonPath: .schema
+      name: Schema
+      type: string
+    name: v1alpha1
+    schema:
+      openAPIV3Schema:
+        description: Auto-generated derived type for PostgresSchemaSpec via `CustomResource`
+        properties:
+          spec:
+            properties:
+              connection:
+                properties:
+                  name:
+                    type: string
+                  namespace:
+                    nullable: true
+                    type: string
+                required:
+                - name
+                type: object
+              schema:
+                type: string
+              schemaOwner:
+                nullable: true
+                oneOf:
+                - required:
+                  - managedRole
+                - required:
+                  - name
+                properties:
+                  managedRole:
+                    properties:
+                      name:
+                        type: string
+                      namespace:
+                        nullable: true
+                        type: string
+                    required:
+                    - name
+                    type: object
+                  name:
+                    type: string
+                type: object
+            required:
+            - connection
+            - schema
+            type: object
+          status:
+            nullable: true
+            type: object
+        required:
+        - spec
+        title: PostgresSchema
+        type: object
+    served: true
+    storage: true
+    subresources:
+      status: {}
+
+---
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  name: postgresadminconnections.postgres.digizuite.com
+spec:
+  group: postgres.digizuite.com
+  names:
+    categories: []
+    kind: PostgresAdminConnection
+    plural: postgresadminconnections
+    shortNames: []
+    singular: postgresadminconnection
+  scope: Namespaced
+  versions:
+  - additionalPrinterColumns:
+    - description: Postgres host
+      jsonPath: .host
+      name: Host
+      type: string
+    - description: Name of the database
+      jsonPath: .database
+      name: Database
+      type: string
+    - description: Name of the admin user
+      jsonPath: .username
+      name: Username
+      type: string
+    name: v1alpha1
+    schema:
+      openAPIV3Schema:
+        description: Auto-generated derived type for PostgresAdminConnectionSpec via `CustomResource`
+        properties:
+          spec:
+            properties:
+              channelBinding:
+                description: Channel binding configuration.
+                enum:
+                - Disable
+                - Prefer
+                - Require
+                nullable: true
+                type: string
+              database:
+                type: string
+              host:
+                type: string
+              password:
+                oneOf:
+                - required:
+                  - plain
+                - required:
+                  - md5
+                - required:
+                  - scram-sha-256
+                properties:
+                  md5:
+                    description: A plaintext or MD5 password is given. If the password is not prefixed with `md5`, then it is reencoded as md5.
+                    type: string
+                  plain:
+                    description: The plaintext password is given and stored as is with no interpretation.
+                    type: string
+                  scram-sha-256:
+                    description: A plaintext or SCRAM-SHA-256 password is given. If the password is not prefixed with `SCRAM-SHA-256$`, then it is reencoded as SCRAM-SHA-256.
+                    type: string
+                type: object
+              port:
+                format: uint16
+                minimum: 0.0
+                type: integer
+              sslMode:
+                enum:
+                - disable
+                - allow
+                - prefer
+                - require
+                - verify-ca
+                - verify-full
+                type: string
+              username:
+                type: string
+            required:
+            - database
+            - host
+            - password
+            - port
+            - sslMode
+            - username
+            type: object
+        required:
+        - spec
+        title: PostgresAdminConnection
+        type: object
+    served: true
+    storage: true
+    subresources: {}
+
+---
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  name: postgresroles.postgres.digizuite.com
+spec:
+  group: postgres.digizuite.com
+  names:
+    categories: []
+    kind: PostgresRole
+    plural: postgresroles
+    shortNames: []
+    singular: postgresrole
+  scope: Namespaced
+  versions:
+  - additionalPrinterColumns:
+    - description: Name of the role
+      jsonPath: .role
+      name: Role
+      type: string
+    name: v1alpha1
+    schema:
+      openAPIV3Schema:
+        description: Auto-generated derived type for PostgresRoleSpec via `CustomResource`
+        properties:
+          spec:
+            properties:
+              connection:
+                properties:
+                  name:
+                    type: string
+                  namespace:
+                    nullable: true
+                    type: string
+                required:
+                - name
+                type: object
+              grantRoleToAdminUser:
+                nullable: true
+                type: boolean
+              password:
+                oneOf:
+                - required:
+                  - plain
+                - required:
+                  - md5
+                - required:
+                  - scram-sha-256
+                properties:
+                  md5:
+                    description: A plaintext or MD5 password is given. If the password is not prefixed with `md5`, then it is reencoded as md5.
+                    type: string
+                  plain:
+                    description: The plaintext password is given and stored as is with no interpretation.
+                    type: string
+                  scram-sha-256:
+                    description: A plaintext or SCRAM-SHA-256 password is given. If the password is not prefixed with `SCRAM-SHA-256$`, then it is reencoded as SCRAM-SHA-256.
+                    type: string
+                type: object
+              registerInPgBouncer:
+                nullable: true
+                properties:
+                  name:
+                    type: string
+                  namespace:
+                    nullable: true
+                    type: string
+                required:
+                - name
+                type: object
+              role:
+                type: string
+            required:
+            - connection
+            - password
+            - role
+            type: object
+          status:
+            nullable: true
+            type: object
+        required:
+        - spec
+        title: PostgresRole
+        type: object
+    served: true
+    storage: true
+    subresources:
+      status: {}
+
+---
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  name: pgbouncers.postgres.digizuite.com
+spec:
+  group: postgres.digizuite.com
+  names:
+    categories: []
+    kind: PgBouncer
+    plural: pgbouncers
+    shortNames: []
+    singular: pgbouncer
+  scope: Namespaced
+  versions:
+  - additionalPrinterColumns:
+    - description: Name of the role
+      jsonPath: .role
+      name: Role
+      type: string
+    name: v1alpha1
+    schema:
+      openAPIV3Schema:
+        description: Auto-generated derived type for PgBouncerSpec via `CustomResource`
+        properties:
+          spec:
+            properties:
+              authUser:
+                nullable: true
+                properties:
+                  password:
+                    oneOf:
+                    - required:
+                      - plain
+                    - required:
+                      - md5
+                    - required:
+                      - scram-sha-256
+                    properties:
+                      md5:
+                        description: A plaintext or MD5 password is given. If the password is not prefixed with `md5`, then it is reencoded as md5.
+                        type: string
+                      plain:
+                        description: The plaintext password is given and stored as is with no interpretation.
+                        type: string
+                      scram-sha-256:
+                        description: A plaintext or SCRAM-SHA-256 password is given. If the password is not prefixed with `SCRAM-SHA-256$`, then it is reencoded as SCRAM-SHA-256.
+                        type: string
+                    type: object
+                  username:
+                    type: string
+                required:
+                - password
+                - username
+                type: object
+              connection:
+                properties:
+                  name:
+                    type: string
+                  namespace:
+                    nullable: true
+                    type: string
+                required:
+                - name
+                type: object
+              pgBouncer:
+                properties:
+                  adminUsers:
+                    items:
+                      type: string
+                    nullable: true
+                    type: array
+                  authType:
+                    enum:
+                    - plain
+                    - md5
+                    - scram-sha256
+                    type: string
+                  authUser:
+                    nullable: true
+                    type: string
+                  clientTlsSslMode:
+                    enum:
+                    - disable
+                    - allow
+                    - prefer
+                    - require
+                    - verify-ca
+                    - verify-full
+                    type: string
+                  ignoreStartupParameters:
+                    items:
+                      type: string
+                    nullable: true
+                    type: array
+                  maxClientConn:
+                    format: uint32
+                    minimum: 0.0
+                    type: integer
+                  maxDbConnections:
+                    format: uint32
+                    minimum: 0.0
+                    type: integer
+                  poolMode:
+                    enum:
+                    - transaction
+                    - session
+                    - statement
+                    type: string
+                  serverTlsSslMode:
+                    enum:
+                    - disable
+                    - allow
+                    - prefer
+                    - require
+                    - verify-ca
+                    - verify-full
+                    type: string
+                required:
+                - authType
+                - clientTlsSslMode
+                - maxClientConn
+                - maxDbConnections
+                - poolMode
+                - serverTlsSslMode
+                type: object
+              podOptions:
+                nullable: true
+                properties:
+                  nodeSelector:
+                    additionalProperties:
+                      type: string
+                    nullable: true
+                    type: object
+                  resources:
+                    description: ResourceRequirements describes the compute resource requirements.
+                    nullable: true
+                    properties:
+                      limits:
+                        additionalProperties:
+                          description: "Quantity is a fixed-point representation of a number. It provides convenient marshaling/unmarshaling in JSON and YAML, in addition to String() and AsInt64() accessors.\n\nThe serialization format is:\n\n``` <quantity>        ::= <signedNumber><suffix>\n\n\t(Note that <suffix> may be empty, from the \"\" case in <decimalSI>.)\n\n<digit>           ::= 0 | 1 | ... | 9 <digits>          ::= <digit> | <digit><digits> <number>          ::= <digits> | <digits>.<digits> | <digits>. | .<digits> <sign>            ::= \"+\" | \"-\" <signedNumber>    ::= <number> | <sign><number> <suffix>          ::= <binarySI> | <decimalExponent> | <decimalSI> <binarySI>        ::= Ki | Mi | Gi | Ti | Pi | Ei\n\n\t(International System of units; See: http://physics.nist.gov/cuu/Units/binary.html)\n\n<decimalSI>       ::= m | \"\" | k | M | G | T | P | E\n\n\t(Note that 1024 = 1Ki but 1000 = 1k; I didn't choose the capitalization.)\n\n<decimalExponent> ::= \"e\" <signedNumber> | \"E\" <signedNumber> ```\n\nNo matter which of the three exponent forms is used, no quantity may represent a number greater than 2^63-1 in magnitude, nor may it have more than 3 decimal places. Numbers larger or more precise will be capped or rounded up. (E.g.: 0.1m will rounded up to 1m.) This may be extended in the future if we require larger or smaller quantities.\n\nWhen a Quantity is parsed from a string, it will remember the type of suffix it had, and will use the same type again when it is serialized.\n\nBefore serializing, Quantity will be put in \"canonical form\". This means that Exponent/suffix will be adjusted up or down (with a corresponding increase or decrease in Mantissa) such that:\n\n- No precision is lost - No fractional digits will be emitted - The exponent (or suffix) is as large as possible.\n\nThe sign will be omitted unless the number is negative.\n\nExamples:\n\n- 1.5 will be serialized as \"1500m\" - 1.5Gi will be serialized as \"1536Mi\"\n\nNote that the quantity will NEVER be internally represented by a floating point number. That is the whole point of this exercise.\n\nNon-canonical values will still parse as long as they are well formed, but will be re-emitted in their canonical form. (So always use canonical form, or don't diff.)\n\nThis format is intended to make it difficult to use these numbers without writing some sort of special handling code in the hopes that that will cause implementors to also use a fixed point implementation."
+                          type: string
+                        description: 'Limits describes the maximum amount of compute resources allowed. More info: https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/'
+                        type: object
+                      requests:
+                        additionalProperties:
+                          description: "Quantity is a fixed-point representation of a number. It provides convenient marshaling/unmarshaling in JSON and YAML, in addition to String() and AsInt64() accessors.\n\nThe serialization format is:\n\n``` <quantity>        ::= <signedNumber><suffix>\n\n\t(Note that <suffix> may be empty, from the \"\" case in <decimalSI>.)\n\n<digit>           ::= 0 | 1 | ... | 9 <digits>          ::= <digit> | <digit><digits> <number>          ::= <digits> | <digits>.<digits> | <digits>. | .<digits> <sign>            ::= \"+\" | \"-\" <signedNumber>    ::= <number> | <sign><number> <suffix>          ::= <binarySI> | <decimalExponent> | <decimalSI> <binarySI>        ::= Ki | Mi | Gi | Ti | Pi | Ei\n\n\t(International System of units; See: http://physics.nist.gov/cuu/Units/binary.html)\n\n<decimalSI>       ::= m | \"\" | k | M | G | T | P | E\n\n\t(Note that 1024 = 1Ki but 1000 = 1k; I didn't choose the capitalization.)\n\n<decimalExponent> ::= \"e\" <signedNumber> | \"E\" <signedNumber> ```\n\nNo matter which of the three exponent forms is used, no quantity may represent a number greater than 2^63-1 in magnitude, nor may it have more than 3 decimal places. Numbers larger or more precise will be capped or rounded up. (E.g.: 0.1m will rounded up to 1m.) This may be extended in the future if we require larger or smaller quantities.\n\nWhen a Quantity is parsed from a string, it will remember the type of suffix it had, and will use the same type again when it is serialized.\n\nBefore serializing, Quantity will be put in \"canonical form\". This means that Exponent/suffix will be adjusted up or down (with a corresponding increase or decrease in Mantissa) such that:\n\n- No precision is lost - No fractional digits will be emitted - The exponent (or suffix) is as large as possible.\n\nThe sign will be omitted unless the number is negative.\n\nExamples:\n\n- 1.5 will be serialized as \"1500m\" - 1.5Gi will be serialized as \"1536Mi\"\n\nNote that the quantity will NEVER be internally represented by a floating point number. That is the whole point of this exercise.\n\nNon-canonical values will still parse as long as they are well formed, but will be re-emitted in their canonical form. (So always use canonical form, or don't diff.)\n\nThis format is intended to make it difficult to use these numbers without writing some sort of special handling code in the hopes that that will cause implementors to also use a fixed point implementation."
+                          type: string
+                        description: 'Requests describes the minimum amount of compute resources required. If Requests is omitted for a container, it defaults to Limits if that is explicitly specified, otherwise to an implementation-defined value. More info: https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/'
+                        type: object
+                    type: object
+                type: object
+              service:
+                properties:
+                  annotations:
+                    additionalProperties:
+                      type: string
+                    nullable: true
+                    type: object
+                  name:
+                    type: string
+                  port:
+                    format: int32
+                    nullable: true
+                    type: integer
+                required:
+                - name
+                type: object
+            required:
+            - connection
+            - pgBouncer
+            - service
+            type: object
+          status:
+            nullable: true
+            type: object
+        required:
+        - spec
+        title: PgBouncer
+        type: object
+    served: true
+    storage: true
+    subresources:
+      status: {}
+
+---
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  name: pgbouncerusers.postgres.digizuite.com
+spec:
+  group: postgres.digizuite.com
+  names:
+    categories: []
+    kind: PgBouncerUser
+    plural: pgbouncerusers
+    shortNames: []
+    singular: pgbounceruser
+  scope: Namespaced
+  versions:
+  - additionalPrinterColumns:
+    - description: Name of the database
+      jsonPath: .databaseName
+      name: Database
+      type: string
+    name: v1alpha1
+    schema:
+      openAPIV3Schema:
+        description: Auto-generated derived type for PgBouncerUserSpec via `CustomResource`
+        properties:
+          spec:
+            properties:
+              password:
+                oneOf:
+                - required:
+                  - plain
+                - required:
+                  - md5
+                - required:
+                  - scram-sha-256
+                properties:
+                  md5:
+                    description: A plaintext or MD5 password is given. If the password is not prefixed with `md5`, then it is reencoded as md5.
+                    type: string
+                  plain:
+                    description: The plaintext password is given and stored as is with no interpretation.
+                    type: string
+                  scram-sha-256:
+                    description: A plaintext or SCRAM-SHA-256 password is given. If the password is not prefixed with `SCRAM-SHA-256$`, then it is reencoded as SCRAM-SHA-256.
+                    type: string
+                type: object
+              pgBouncer:
+                properties:
+                  name:
+                    type: string
+                  namespace:
+                    nullable: true
+                    type: string
+                required:
+                - name
+                type: object
+              username:
+                type: string
+            required:
+            - password
+            - pgBouncer
+            - username
+            type: object
+          status:
+            nullable: true
+            properties:
+              ready:
+                type: boolean
+            required:
+            - ready
+            type: object
+        required:
+        - spec
+        title: PgBouncerUser
+        type: object
+    served: true
+    storage: true
+    subresources:
+      status: {}
+
+---
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  name: pgbouncerdatabases.postgres.digizuite.com
+spec:
+  group: postgres.digizuite.com
+  names:
+    categories: []
+    kind: PgBouncerDatabase
+    plural: pgbouncerdatabases
+    shortNames: []
+    singular: pgbouncerdatabase
+  scope: Namespaced
+  versions:
+  - additionalPrinterColumns:
+    - description: Name of the database
+      jsonPath: .databaseName
+      name: Database
+      type: string
+    name: v1alpha1
+    schema:
+      openAPIV3Schema:
+        description: Auto-generated derived type for PgBouncerDatabaseSpec via `CustomResource`
+        properties:
+          spec:
+            properties:
+              exposedDatabaseName:
+                type: string
+              host:
+                type: string
+              internalDatabaseName:
+                nullable: true
+                type: string
+              pgBouncer:
+                properties:
+                  name:
+                    type: string
+                  namespace:
+                    nullable: true
+                    type: string
+                required:
+                - name
+                type: object
+              port:
+                format: uint16
+                minimum: 0.0
+                nullable: true
+                type: integer
+              user:
+                nullable: true
+                type: string
+            required:
+            - exposedDatabaseName
+            - host
+            - pgBouncer
+            type: object
+          status:
+            nullable: true
+            properties:
+              ready:
+                type: boolean
+            required:
+            - ready
+            type: object
+        required:
+        - spec
+        title: PgBouncerDatabase
+        type: object
+    served: true
+    storage: true
+    subresources:
+      status: {}
+
+---
