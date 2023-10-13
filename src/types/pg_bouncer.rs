@@ -6,7 +6,7 @@ use kube_runtime::reflector::ObjectRef;
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 use crate::postgres_password::PostgresPassword;
-use crate::types::{PostgresAdminConnectionReference, PostgresSslMode};
+use crate::types::{PostgresSslMode};
 
 
 #[derive(CustomResource, Serialize, Deserialize, Debug, PartialEq, Clone, JsonSchema)]
@@ -23,8 +23,6 @@ namespaced
 #[serde(rename_all = "camelCase")]
 pub struct PgBouncerSpec {
     pub pg_bouncer: PgBouncerSettings,
-    pub connection: PostgresAdminConnectionReference,
-    pub auth_user: Option<PgBouncerAuthUser>,
     pub pod_options: Option<PgBouncerPodOptions>,
     pub service: PgBouncerServiceSettings,
 }
@@ -86,7 +84,6 @@ pub struct PgBouncerPodOptions {
 pub struct PgBouncerSettings {
     pub pool_mode: PgBouncerPoolMode,
     pub auth_type: PgBouncerAuthType,
-    pub auth_user: Option<String>,
     pub admin_users: Option<Vec<String>>,
     pub ignore_startup_parameters: Option<Vec<String>>,
     pub server_tls_ssl_mode: PostgresSslMode,

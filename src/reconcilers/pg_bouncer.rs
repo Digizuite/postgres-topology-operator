@@ -261,7 +261,6 @@ fn create_pg_bouncer_ini<'a>(spec: &PgBouncerSpec, databases: impl Iterator<Item
     builder.add_setting("listen_port", PG_BOUNCER_PORT);
     builder.add_setting("listen_addr", "0.0.0.0");
     builder.add_setting("auth_type", &settings.auth_type);
-    builder.add_optional("auth_user", &settings.auth_user);
     if let Some(admin_users) = &settings.admin_users {
         builder.add_comma_separated("admin_users", admin_users);
     }

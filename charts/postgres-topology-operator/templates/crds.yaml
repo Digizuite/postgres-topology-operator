@@ -286,44 +286,6 @@ spec:
         properties:
           spec:
             properties:
-              authUser:
-                nullable: true
-                properties:
-                  password:
-                    oneOf:
-                    - required:
-                      - plain
-                    - required:
-                      - md5
-                    - required:
-                      - scram-sha-256
-                    properties:
-                      md5:
-                        description: A plaintext or MD5 password is given. If the password is not prefixed with `md5`, then it is reencoded as md5.
-                        type: string
-                      plain:
-                        description: The plaintext password is given and stored as is with no interpretation.
-                        type: string
-                      scram-sha-256:
-                        description: A plaintext or SCRAM-SHA-256 password is given. If the password is not prefixed with `SCRAM-SHA-256$`, then it is reencoded as SCRAM-SHA-256.
-                        type: string
-                    type: object
-                  username:
-                    type: string
-                required:
-                - password
-                - username
-                type: object
-              connection:
-                properties:
-                  name:
-                    type: string
-                  namespace:
-                    nullable: true
-                    type: string
-                required:
-                - name
-                type: object
               pgBouncer:
                 properties:
                   adminUsers:
@@ -336,9 +298,6 @@ spec:
                     - plain
                     - md5
                     - scram-sha256
-                    type: string
-                  authUser:
-                    nullable: true
                     type: string
                   clientTlsSslMode:
                     enum:
@@ -428,7 +387,6 @@ spec:
                 - name
                 type: object
             required:
-            - connection
             - pgBouncer
             - service
             type: object
