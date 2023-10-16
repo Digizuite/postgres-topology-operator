@@ -271,6 +271,7 @@ fn create_pg_bouncer_ini<'a>(spec: &PgBouncerSpec, databases: impl Iterator<Item
     builder.add_setting("client_tls_sslmode", &settings.client_tls_ssl_mode);
     builder.add_setting("max_client_conn", settings.max_client_conn);
     builder.add_setting("max_db_connections", settings.max_db_connections);
+    builder.add_setting("auth_file", format!("/etc/pgbouncer/{}", USERLIST_TXT_FILE_NAME));
 
 
     builder.add_section("databases");

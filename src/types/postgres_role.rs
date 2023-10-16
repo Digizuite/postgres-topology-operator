@@ -34,7 +34,14 @@ impl HasPostgresAdminConnection for PostgresRole {
 #[derive(Serialize, Deserialize, Debug, PartialEq, Clone, JsonSchema, Default)]
 #[serde(rename_all = "camelCase")]
 pub struct PostgresRoleStatus {
+    pub encoded_password: Option<StatusEncodedPassword>,
+}
 
+#[derive(Serialize, Deserialize, Debug, PartialEq, Clone, JsonSchema)]
+#[serde(rename_all = "camelCase")]
+pub struct StatusEncodedPassword {
+    pub original: PostgresPassword,
+    pub encoded: String,
 }
 
 #[derive(Serialize, Deserialize, Debug, PartialEq, Clone, JsonSchema, Default)]

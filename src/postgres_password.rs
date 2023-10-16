@@ -40,6 +40,14 @@ impl PostgresPassword {
             PostgresPassword::ScramSha256(v) => v,
         }
     }
+
+    pub fn with_new_text(&self, text: String) -> Self {
+        match self {
+            PostgresPassword::Plain(_) => PostgresPassword::Plain(text),
+            PostgresPassword::Md5(_) => PostgresPassword::Md5(text),
+            PostgresPassword::ScramSha256(_) => PostgresPassword::ScramSha256(text),
+        }
+    }
 }
 
 
