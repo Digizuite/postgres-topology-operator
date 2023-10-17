@@ -6,12 +6,12 @@ use k8s_openapi::api::core::v1::{ConfigMap, ConfigMapVolumeSource, Container, Po
 use k8s_openapi::apimachinery::pkg::apis::meta::v1::{LabelSelector, ObjectMeta};
 use k8s_openapi::apimachinery::pkg::util::intstr::IntOrString;
 use kube::{Api, Resource, ResourceExt};
-use kube::api::{Patch, PatchParams};
+use kube::api::{ListParams, Patch, PatchParams};
 use kube_runtime::controller::Action;
 use sha2::{Digest};
 use crate::{ContextData, Error};
 use crate::helpers::ini_builder;
-use crate::types::{HasPgBouncerReference, PgBouncer, PgBouncerDatabaseSpec, PgBouncerSpec, PgBouncerUserSpec};
+use crate::types::{HasPgBouncerReference, PgBouncer, PgBouncerDatabase, PgBouncerDatabaseSpec, PgBouncerSpec, PgBouncerUser, PgBouncerUserSpec};
 
 const PG_BOUNCER_INI_FILE_NAME: &str = "pgbouncer.ini";
 const USERLIST_TXT_FILE_NAME: &str = "userlist.txt";
@@ -37,13 +37,20 @@ async fn run_reconciler(resource: Arc<PgBouncer>, context: Arc<ContextData>) -> 
     let resource_name = resource.name_any();
 
 
-    let databases = context.pg_bouncer_databases_store.state();
+
+
+
+    let databases = Api::<PgBouncerDatabase>::all(context.kubernetes_client.clone())
+        .list(&ListParams::default())
+        .await?;
     let databases = databases
         .iter()
         .filter(|db| db.is_for(&resource))
         .map(|db| &db.spec);
 
-    let users = context.pg_bouncer_users_store.state();
+    let users = Api::<PgBouncerUser>::all(context.kubernetes_client.clone())
+        .list(&ListParams::default())
+        .await?;
     let users = users
         .iter()
         .filter(|u| u.is_for(&resource))

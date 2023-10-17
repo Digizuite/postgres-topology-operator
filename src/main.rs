@@ -15,16 +15,13 @@ use kube::client::Client;
 use kube::{Api, CustomResourceExt, Resource};
 use kube_runtime::controller::{Action};
 use kube_runtime::watcher::Config;
-use kube_runtime::{Controller, reflector, watcher, WatchStreamExt};
+use kube_runtime::{Controller};
 use serde::de::DeserializeOwned;
 use std::fmt::Debug;
 use std::fs::File;
-use std::hash::Hash;
 use std::io::Write;
 use std::sync::Arc;
 use std::time::Duration;
-use futures::future;
-use kube_runtime::reflector::{Store};
 use tokio::task::JoinSet;
 use crate::types::{HasPgBouncerReference, PgBouncer, PgBouncerDatabase, PgBouncerUser, PostgresAdminConnection, PostgresRole, PostgresSchema};
 
@@ -60,23 +57,11 @@ async fn main() -> anyhow::Result<()> {
     let services_api: Api<Service> = Api::all(kubernetes_client.clone());
     let config_map_api: Api<ConfigMap> = Api::all(kubernetes_client.clone());
 
-
-
-
-    let (pg_bouncer_database_store, pg_bouncer_database_store_task) = create_store(kubernetes_client.clone());
-    let (pg_bouncer_user_store, pg_bouncer_user_store_task) = create_store(kubernetes_client.clone());
-
-
     let context = Arc::new(ContextData {
         kubernetes_client: kubernetes_client.clone(),
-        pg_bouncer_databases_store: pg_bouncer_database_store,
-        pg_bouncer_users_store: pg_bouncer_user_store,
     });
 
     let mut tasks = JoinSet::new();
-    tasks.spawn(pg_bouncer_database_store_task);
-    tasks.spawn(pg_bouncer_user_store_task);
-
 
     tasks.spawn(Controller::new(pg_bouncer_api.clone(), Config::default())
         .watches(related_pg_bouncer_databases_api, Config::default(), |o| o.get_pg_bouncer_object_ref())
@@ -121,20 +106,6 @@ async fn main() -> anyhow::Result<()> {
 }
 
 
-
-fn create_store<K>(kubernetes_client: Client) -> (Store<K>, impl futures::Future<Output = ()>)
-where
-    K: Resource + Clone + 'static + DeserializeOwned + Debug + Send,
-    K::DynamicType: Eq + Hash + Clone + Default,
-{
-    let (reader, writer) = reflector::store();
-    let api = Api::all(kubernetes_client);
-    let rf = reflector::reflector(writer, watcher(api, Config::default()));
-    let task = rf.applied_objects().for_each(|_| future::ready(()));
-    (reader, task)
-}
-
-
 fn write_crds() -> anyhow::Result<()> {
     let file_path = "charts/postgres-topology-operator/templates/crds.yaml";
 
@@ -162,8 +133,6 @@ fn write_crd<TResource: CustomResourceExt>(mut file: &mut File) -> anyhow::Resul
 
 pub struct ContextData {
     kubernetes_client: Client,
-    pg_bouncer_databases_store: Store<PgBouncerDatabase>,
-    pg_bouncer_users_store: Store<PgBouncerUser>,
 }
 
 /// All errors possible to occur during reconciliation
