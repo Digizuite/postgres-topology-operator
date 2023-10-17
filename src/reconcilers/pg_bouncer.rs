@@ -1,13 +1,12 @@
 use std::collections::BTreeMap;
 use std::sync::Arc;
-use std::time::Duration;
 use itertools::Itertools;
 use k8s_openapi::api::apps::v1::{Deployment, DeploymentSpec, DeploymentStrategy, RollingUpdateDeployment};
-use k8s_openapi::api::core::v1::{ConfigMap, ConfigMapVolumeSource, Container, Pod, PodSpec, PodTemplateSpec, Service, ServicePort, ServiceSpec, Volume, VolumeMount};
+use k8s_openapi::api::core::v1::{ConfigMap, ConfigMapVolumeSource, Container, PodSpec, PodTemplateSpec, Service, ServicePort, ServiceSpec, Volume, VolumeMount};
 use k8s_openapi::apimachinery::pkg::apis::meta::v1::{LabelSelector, ObjectMeta};
 use k8s_openapi::apimachinery::pkg::util::intstr::IntOrString;
 use kube::{Api, Resource, ResourceExt};
-use kube::api::{AttachParams, ListParams, Patch, PatchParams};
+use kube::api::{Patch, PatchParams};
 use kube_runtime::controller::Action;
 use sha2::{Digest};
 use crate::{ContextData, Error};
@@ -81,7 +80,7 @@ async fn run_reconciler(resource: Arc<PgBouncer>, context: Arc<ContextData>) -> 
     };
 
 
-    let (config_map, config_map_needs_reload) = if let Some(config_map) = config_map_api.get_opt(&config_map_name).await? {
+    let config_map = if let Some(config_map) = config_map_api.get_opt(&config_map_name).await? {
 
         let must_update_config_map = if let Some(existing) = &config_map.data {
             if existing.get(PG_BOUNCER_INI_FILE_NAME) != Some(&pg_bouncer_ini) {
@@ -103,10 +102,10 @@ async fn run_reconciler(resource: Arc<PgBouncer>, context: Arc<ContextData>) -> 
 
             info!("Updated config map {:?}", config_map.metadata.name);
 
-            (config_map, true)
+            config_map
         } else {
             info!("Config map does not need to be updated");
-            (config_map, false)
+            config_map
         }
     } else {
         let patch = Patch::Apply(&desired_config_map);
@@ -114,7 +113,7 @@ async fn run_reconciler(resource: Arc<PgBouncer>, context: Arc<ContextData>) -> 
 
         info!("Created config map {:?}", config_map.metadata.name);
 
-        (config_map, false)
+        config_map
     };
 
 
@@ -166,7 +165,7 @@ async fn run_reconciler(resource: Arc<PgBouncer>, context: Arc<ContextData>) -> 
                     containers: vec![
                         Container {
                             name: "pg-bouncer".to_string(),
-                            image: Some("ghcr.io/digizuite/digi-pg-bouncer:master".to_string()),
+                            image: Some("ghcr.io/digizuite/digi-pg-bouncer:task-DEPLOY-22".to_string()),
                             image_pull_policy: Some("Always".to_string()),
                             volume_mounts: Some(vec![
                                 VolumeMount {
@@ -177,9 +176,6 @@ async fn run_reconciler(resource: Arc<PgBouncer>, context: Arc<ContextData>) -> 
                                 }
                             ]),
                             resources: resource.spec.pod_options.as_ref().and_then(|o| o.resources.clone()),
-                            args: Some(vec![
-                                "/usr/bin/pgbouncer".to_string(), "/etc/pgbouncer/pgbouncer.ini".to_string(),
-                            ]),
                             ..Default::default()
                         }
                     ],
@@ -192,17 +188,9 @@ async fn run_reconciler(resource: Arc<PgBouncer>, context: Arc<ContextData>) -> 
         ..Default::default()
     };
 
-    let mut deployment = deployments_api.patch(&deployment_name, &serverside, &Patch::Apply(deployment)).await?;
+    deployments_api.patch(&deployment_name, &serverside, &Patch::Apply(deployment)).await?;
 
-
-    while !deployment.status.as_ref().is_some_and(|s| s.available_replicas == Some(1)) {
-        info!("Waiting for deployment to be ready");
-        tokio::time::sleep(std::time::Duration::from_secs(1)).await;
-
-        deployment = deployments_api.get(&deployment_name).await?;
-    }
-
-    info!("Deployment is ready");
+    info!("Deployment created");
 
     let service = Service {
         metadata: ObjectMeta {
@@ -232,22 +220,7 @@ async fn run_reconciler(resource: Arc<PgBouncer>, context: Arc<ContextData>) -> 
 
     info!("Service created/updated");
 
-    if config_map_needs_reload {
-        let pod_api: Api<Pod> = Api::namespaced(context.kubernetes_client.clone(), &namespace);
-        let list_params = ListParams::default().labels(&format!("postgres-topology-operator/pg_bouncer={owner_label}"));
-        let pods = pod_api.list(&list_params).await?;
-
-        if let Some(pod) = pods.items.first() {
-            info!("Ordering pg_bouncer to reload configs");
-            let attached_process = pod_api.exec(&pod.name_any(), ["kill", "-1", "1"], &AttachParams::default()).await?;
-            attached_process.join().await?;
-            info!("pg_bouncer configs reloaded");
-        } else {
-            error!("Could not find pg_bouncer pod to reload configs");
-        }
-    }
-
-    Ok(Action::requeue(Duration::from_secs(60)))
+    Ok(Action::await_change())
 }
 
 fn create_pg_bouncer_ini<'a>(spec: &PgBouncerSpec, databases: impl Iterator<Item=&'a PgBouncerDatabaseSpec>) -> String {
