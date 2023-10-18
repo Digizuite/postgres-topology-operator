@@ -421,6 +421,10 @@ spec:
             type: object
           status:
             nullable: true
+            properties:
+              lastUserConfigHash:
+                nullable: true
+                type: string
             type: object
         required:
         - spec

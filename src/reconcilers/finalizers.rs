@@ -78,5 +78,12 @@ where
     });
 
     let patch = Patch::Merge(&finalizer);
-    Ok(api.patch(&name, &PatchParams::default(), &patch).await?)
+    match api.patch(&name, &PatchParams::default(), &patch).await {
+        Ok(r) => Ok(r),
+        Err(kube::Error::Api(e)) if e.code == 404 => {
+            debug!("Resource {namespace}/{name} to remove finalizer. Assuming this is Ok");
+            Ok(resource)
+        },
+        Err(e) => Err(e.into()),
+    }
 }

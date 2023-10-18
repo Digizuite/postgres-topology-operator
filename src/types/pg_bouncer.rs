@@ -1,5 +1,5 @@
 use std::collections::BTreeMap;
-use std::fmt::{Display, Formatter};
+use std::fmt::{Debug, Display, Formatter};
 use k8s_openapi::api::core::v1::ResourceRequirements;
 use kube::{CustomResource, ResourceExt};
 use kube_runtime::reflector::ObjectRef;
@@ -36,16 +36,22 @@ pub struct PgBouncerReference {
 
 impl PgBouncerReference {
     pub fn to_object_ref(&self, current_namespace: &str) -> ObjectRef<PgBouncer> {
-        ObjectRef::new(&self.name)
-            .within(self.namespace.as_deref().unwrap_or(current_namespace))
+        let o_ref = ObjectRef::new(&self.name)
+            .within(self.namespace.as_deref().unwrap_or(current_namespace));
+
+        info!("Made object ref {:?}", o_ref);
+
+        o_ref
+
     }
 }
 
-pub trait HasPgBouncerReference: ResourceExt {
+pub trait HasPgBouncerReference: ResourceExt + Debug {
     fn get_pg_bouncer_object_ref(&self) -> Option<ObjectRef<PgBouncer>> {
-        debug!("Getting pg_bouncer object ref from {}", self.name_any());
+        info!("Getting pg_bouncer object ref from {}", self.name_any());
         let ns = self.namespace()?;
         let pg_bouncer_ref = self.get_pg_bouncer_reference()?;
+        info!("Got pg bouncer ref: {:?}", pg_bouncer_ref);
         Some(pg_bouncer_ref.to_object_ref(&ns))
     }
 
@@ -101,7 +107,9 @@ pub struct PgBouncerAuthUser {
 
 #[derive(Serialize, Deserialize, Debug, PartialEq, Clone, JsonSchema, Default)]
 #[serde(rename_all = "camelCase")]
-pub struct PgBouncerStatus {}
+pub struct PgBouncerStatus {
+    pub last_user_config_hash: Option<String>,
+}
 
 #[derive(Serialize, Deserialize, Debug, PartialEq, Clone, JsonSchema, Default)]
 #[serde(rename_all = "camelCase")]
