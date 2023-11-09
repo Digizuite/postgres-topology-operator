@@ -256,8 +256,7 @@ async fn run_reconciler(resource: Arc<PgBouncer>, context: Arc<ContextData>) -> 
 
 
     info!("Finished pg bouncer reconcilation");
-    // Ok(Action::requeue(Duration::from_secs(60 * 5)))
-    Ok(Action::await_change())
+    Ok(Action::requeue(Duration::from_secs(60)))
 }
 
 fn create_pg_bouncer_ini<'a>(spec: &PgBouncerSpec, databases: impl Iterator<Item=&'a PgBouncerDatabaseSpec>) -> String {

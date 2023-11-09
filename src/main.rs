@@ -15,7 +15,7 @@ use kube::client::Client;
 use kube::{Api, CustomResourceExt, Resource};
 use kube_runtime::controller::{Action};
 use kube_runtime::watcher::Config;
-use kube_runtime::{Controller, controller};
+use kube_runtime::{Controller};
 use serde::de::DeserializeOwned;
 use std::fmt::Debug;
 use std::fs::File;
@@ -64,11 +64,11 @@ async fn main() -> anyhow::Result<()> {
     let mut tasks = JoinSet::new();
 
     tasks.spawn(Controller::new(pg_bouncer_api.clone(), Config::default())
-        // .watches(related_pg_bouncer_databases_api, Config::default(), |o| o.get_pg_bouncer_object_ref())
+        .watches(related_pg_bouncer_databases_api, Config::default(), |o| o.get_pg_bouncer_object_ref())
         .watches(related_pg_bouncer_users_api.clone(), Config::default(), |o| o.get_pg_bouncer_object_ref())
-        // .owns(deployments_api, Config::default())
-        // .owns(services_api, Config::default())
-        // .owns(config_map_api, Config::default())
+        .owns(deployments_api, Config::default())
+        .owns(services_api, Config::default())
+        .owns(config_map_api, Config::default())
         .run(reconcilers::pg_bouncer::reconcile_pg_bouncer, error_policy, context.clone())
         .for_each(|res| async move {
             match res {
@@ -77,24 +77,24 @@ async fn main() -> anyhow::Result<()> {
             }
         }));
     //
-    // tasks.spawn(Controller::new(postgres_roles_api.clone(), Config::default())
-    //     .owns(related_pg_bouncer_users_api, Config::default())
-    //     .run(reconcilers::postgres_role::reconcile_postgres_role, error_policy, context.clone())
-    //     .for_each(|res| async move {
-    //         match res {
-    //             Ok(o) => debug!("reconciled: {:?}", o),
-    //             Err(e) => error!("reconcile failed: {:?}", e),
-    //         }
-    //     }));
+    tasks.spawn(Controller::new(postgres_roles_api.clone(), Config::default())
+        .owns(related_pg_bouncer_users_api, Config::default())
+        .run(reconcilers::postgres_role::reconcile_postgres_role, error_policy, context.clone())
+        .for_each(|res| async move {
+            match res {
+                Ok(o) => debug!("reconciled: {:?}", o),
+                Err(e) => error!("reconcile failed: {:?}", e),
+            }
+        }));
 
-    // tasks.spawn(Controller::new(postgres_schemas_api.clone(), Config::default())
-    //     .run(reconcilers::postgres_schema::reconcile_postgres_schema, error_policy, context.clone())
-    //     .for_each(|res| async move {
-    //         match res {
-    //             Ok(o) => debug!("reconciled: {:?}", o),
-    //             Err(e) => error!("reconcile failed: {:?}", e),
-    //         }
-    //     }));
+    tasks.spawn(Controller::new(postgres_schemas_api.clone(), Config::default())
+        .run(reconcilers::postgres_schema::reconcile_postgres_schema, error_policy, context.clone())
+        .for_each(|res| async move {
+            match res {
+                Ok(o) => debug!("reconciled: {:?}", o),
+                Err(e) => error!("reconcile failed: {:?}", e),
+            }
+        }));
 
     info!("Operator tasks started");
 

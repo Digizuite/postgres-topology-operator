@@ -36,22 +36,15 @@ pub struct PgBouncerReference {
 
 impl PgBouncerReference {
     pub fn to_object_ref(&self, current_namespace: &str) -> ObjectRef<PgBouncer> {
-        let o_ref = ObjectRef::new(&self.name)
-            .within(self.namespace.as_deref().unwrap_or(current_namespace));
-
-        info!("Made object ref {:?}", o_ref);
-
-        o_ref
-
+        ObjectRef::new(&self.name)
+            .within(self.namespace.as_deref().unwrap_or(current_namespace))
     }
 }
 
 pub trait HasPgBouncerReference: ResourceExt + Debug {
     fn get_pg_bouncer_object_ref(&self) -> Option<ObjectRef<PgBouncer>> {
-        info!("Getting pg_bouncer object ref from {}", self.name_any());
         let ns = self.namespace()?;
         let pg_bouncer_ref = self.get_pg_bouncer_reference()?;
-        info!("Got pg bouncer ref: {:?}", pg_bouncer_ref);
         Some(pg_bouncer_ref.to_object_ref(&ns))
     }
 
