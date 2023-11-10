@@ -9,5 +9,5 @@ kubeVersion: ">= 1.25.0-0"
 name: postgres-topology-operator
 sources:
   - https://github.com/digizuite/postgres-topology-operator
-version: 0.0.6
+version: 0.0.7
 icon: https://www.postgresql.org/media/img/about/press/elephant.png
