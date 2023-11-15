@@ -2,6 +2,7 @@
 name = "postgres-topology-operator"
 version = "0.1.0"
 edition = "2021"
+build = "build.rs"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
@@ -33,3 +34,6 @@ webpki-roots = "0.25.2"
 itertools = "0.11.0"
 base16ct = { version = "0.2.0", features = ["alloc", "std"] }
 
+
+[build-dependencies]
+vergen = { version = "8.0.0", features = ["build", "git", "gitcl"] }
