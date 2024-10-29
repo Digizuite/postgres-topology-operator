@@ -63,6 +63,7 @@ async fn run_reconciler(resource: Arc<PgBouncer>, context: Arc<ContextData>) -> 
     let config_map_api: Api<ConfigMap> = Api::namespaced(context.kubernetes_client.clone(), &namespace);
     let deployments_api: Api<Deployment> = Api::namespaced(context.kubernetes_client.clone(), &namespace);
 
+    let watcher_labels = BTreeMap::from([("controller-watcher".to_string(), "postgres-topology-operator".to_string())]);
 
     let config_map_name = format!("{}-config", resource_name);
 
@@ -75,6 +76,7 @@ async fn run_reconciler(resource: Arc<PgBouncer>, context: Arc<ContextData>) -> 
             namespace: Some(namespace.clone()),
             name: Some(config_map_name.clone()),
             owner_references: Some(vec![resource.controller_owner_ref(&()).unwrap()]),
+            labels: Some(watcher_labels.clone()),
             ..Default::default()
         },
         data: Some([
@@ -135,6 +137,7 @@ async fn run_reconciler(resource: Arc<PgBouncer>, context: Arc<ContextData>) -> 
             namespace: Some(namespace.clone()),
             name: Some(deployment_name.clone()),
             owner_references: Some(vec![resource.controller_owner_ref(&()).unwrap()]),
+            labels: Some(watcher_labels.clone()),
             ..Default::default()
         },
         spec: Some(DeploymentSpec {
@@ -159,7 +162,7 @@ async fn run_reconciler(resource: Arc<PgBouncer>, context: Arc<ContextData>) -> 
                         Volume {
                             name: "config".to_string(),
                             config_map: Some(ConfigMapVolumeSource {
-                                name: Some(config_map.name_any()),
+                                name: config_map.name_any(),
                                 optional: Some(false),
                                 ..Default::default()
                             }),
@@ -220,6 +223,7 @@ async fn run_reconciler(resource: Arc<PgBouncer>, context: Arc<ContextData>) -> 
             namespace: Some(namespace.clone()),
             name: Some(resource.spec.service.name.clone()),
             owner_references: Some(vec![resource.controller_owner_ref(&()).unwrap()]),
+            labels: Some(watcher_labels.clone()),
             annotations: resource.spec.service.annotations.clone(),
             ..Default::default()
         },
