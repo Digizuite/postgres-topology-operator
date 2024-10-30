@@ -9,14 +9,6 @@ on:
       - "Dockerfile"
       - "Cargo.*"
       - ".github/workflows/docker-image.yml"
-  pull_request:
-    paths:
-      - "crds/**"
-      - "src/**"
-      - "build.rs"
-      - "Dockerfile"
-      - "Cargo.*"
-      - ".github/workflows/docker-image.yml"
 
 env:
   REGISTRY: ghcr.io
