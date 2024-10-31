@@ -70,9 +70,9 @@ async fn main() -> anyhow::Result<()> {
     tasks.spawn(Controller::new(pg_bouncer_api.clone(), Config::default())
         .watches(related_pg_bouncer_databases_api, Config::default(), |o| o.get_pg_bouncer_object_ref())
         .watches(related_pg_bouncer_users_api.clone(), Config::default(), |o| o.get_pg_bouncer_object_ref())
-        .owns(deployments_api, Config::default())
-        .owns(services_api, Config::default())
-        .owns(config_map_api, Config::default())
+        .owns(deployments_api, Config::default().labels("controller-watcher=postgres-topology-operator"))
+        .owns(services_api, Config::default().labels("controller-watcher=postgres-topology-operator"))
+        .owns(config_map_api, Config::default().labels("controller-watcher=postgres-topology-operator"))
         .run(reconcilers::pg_bouncer::reconcile_pg_bouncer, error_policy, context.clone())
         .for_each(|res| async move {
             match res {

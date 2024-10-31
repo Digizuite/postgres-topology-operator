@@ -1,23 +1,7 @@
 name: Docker build + push
 
 on:
-  schedule:
-    - cron: "0 10 * * *"
   push:
-    branches:
-      - "master"
-    tags:
-      - "v*.*.*"
-    paths:
-      - "crds/**"
-      - "src/**"
-      - "build.rs"
-      - "Dockerfile"
-      - "Cargo.*"
-      - ".github/workflows/docker-image.yml"
-  pull_request:
-    branches:
-      - "master"
     paths:
       - "crds/**"
       - "src/**"
