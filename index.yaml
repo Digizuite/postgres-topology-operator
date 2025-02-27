@@ -3,6 +3,23 @@ entries:
   postgres-topology-operator:
   - apiVersion: v2
     appVersion: 0.0.1
+    created: "2025-02-27T14:11:47.466091371Z"
+    description: An operator for Postgres topology
+    digest: bc7d6ca9533ff9e2a1cd7c7da83b6a35512d47b4379da3ecff0ad271c248f2ec
+    home: https://github.com/digizuite/postgres-topology-operator
+    icon: https://www.postgresql.org/media/img/about/press/elephant.png
+    keywords:
+    - operator
+    - postgres
+    kubeVersion: '>= 1.29.0-0'
+    name: postgres-topology-operator
+    sources:
+    - https://github.com/digizuite/postgres-topology-operator
+    urls:
+    - https://github.com/Digizuite/postgres-topology-operator/releases/download/postgres-topology-operator-0.0.8/postgres-topology-operator-0.0.8.tgz
+    version: 0.0.8
+  - apiVersion: v2
+    appVersion: 0.0.1
     created: "2023-11-10T09:20:30.043849902Z"
     description: An operator for Postgres topology
     digest: a0e651bcfa21fcf1c039f0f68cb12248f1c2003c1c86d3fa0a195fba688bf416
@@ -86,4 +103,4 @@ entries:
     urls:
     - https://github.com/Digizuite/postgres-topology-operator/releases/download/postgres-topology-operator-0.0.3/postgres-topology-operator-0.0.3.tgz
     version: 0.0.3
-generated: "2023-11-10T09:20:30.043872845Z"
+generated: "2025-02-27T14:11:47.466119023Z"
