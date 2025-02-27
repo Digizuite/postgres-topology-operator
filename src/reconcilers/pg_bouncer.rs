@@ -3,7 +3,7 @@ use std::sync::Arc;
 use std::time::Duration;
 use itertools::Itertools;
 use k8s_openapi::api::apps::v1::{Deployment, DeploymentSpec, DeploymentStrategy, RollingUpdateDeployment};
-use k8s_openapi::api::core::v1::{ConfigMap, ConfigMapVolumeSource, Container, Pod, PodSpec, PodTemplateSpec, Service, ServicePort, ServiceSpec, Volume, VolumeMount};
+use k8s_openapi::api::core::v1::{ConfigMap, ConfigMapVolumeSource, Container, LocalObjectReference, Pod, PodSpec, PodTemplateSpec, Service, ServicePort, ServiceSpec, Volume, VolumeMount};
 use k8s_openapi::apimachinery::pkg::apis::meta::v1::{LabelSelector, ObjectMeta};
 use k8s_openapi::apimachinery::pkg::util::intstr::IntOrString;
 use kube::{Api, Resource, ResourceExt};
@@ -169,10 +169,23 @@ async fn run_reconciler(resource: Arc<PgBouncer>, context: Arc<ContextData>) -> 
                             ..Default::default()
                         }
                     ]),
+                    image_pull_secrets: resource
+                        .spec
+                        .pod_options
+                        .as_ref()
+                        .and_then(|p| p.image_pull_secret.clone())
+                        .map(|s| vec![LocalObjectReference { name: s }]),
                     containers: vec![
                         Container {
                             name: "pg-bouncer".to_string(),
-                            image: Some("ghcr.io/digizuite/digi-pg-bouncer:task-DEPLOY-22".to_string()),
+                            image: resource
+                                .spec
+                                .pod_options
+                                .as_ref()
+                                .and_then(|p| p.image.clone())
+                                .or_else(|| {
+                                    Some("ghcr.io/digizuite/digi-pg-bouncer:task-DEPLOY-22".to_string())
+                                }),
                             image_pull_policy: Some("Always".to_string()),
                             volume_mounts: Some(vec![
                                 VolumeMount {
