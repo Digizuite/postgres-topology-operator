@@ -5,9 +5,9 @@ home: https://github.com/digizuite/postgres-topology-operator
 keywords:
   - operator
   - postgres
-kubeVersion: ">= 1.25.0-0"
+kubeVersion: ">= 1.29.0-0"
 name: postgres-topology-operator
 sources:
   - https://github.com/digizuite/postgres-topology-operator
-version: 0.0.7
+version: 0.0.8
 icon: https://www.postgresql.org/media/img/about/press/elephant.png
