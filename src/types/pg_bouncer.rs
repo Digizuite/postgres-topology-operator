@@ -76,6 +76,14 @@ pub struct PgBouncerServiceSettings {
 pub struct PgBouncerPodOptions {
     pub node_selector: Option<BTreeMap<String, String>>,
     pub resources: Option<ResourceRequirements>,
+
+    /// A custom image to use for pg-bouncer
+    pub image: Option<String>,
+
+    /// A pull secret to use for the custom image. Do note pg-bouncer is started in the same
+    /// namespace as this CRD instance, meaning the pull secret should be in the same
+    /// namespace as this CRD instance.
+    pub image_pull_secret: Option<String>
 }
 
 #[derive(Serialize, Deserialize, Debug, PartialEq, Clone, JsonSchema, Default)]
